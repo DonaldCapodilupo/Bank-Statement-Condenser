@@ -1,94 +1,77 @@
 import csv
 from BankInformationRetrievalFunctions import *
-from AccountClasses import OutputFile
+
 ROOT = path.dirname(path.realpath(__file__))
 
-def writeToCSV():
-    import csv
-    csv_file = "Income and Expenses.csv"
-    headers = ["Date","Amount","Type"," Description","Category"]
-    if os.path.isfile('Income and Expenses.csv'):
-        pass
-    else:
-        with open(csv_file, 'w', newline='') as csvFile:
 
-            writer = csv.writer(csvFile)
-            writer.writerow(headers)
+#Date, Amount, Type, Description, Category
 
-#Returns a dictionary of all descriptions and categories present in "Categories.csv"
-def getCategoryInformation():
-    os.chdir(ROOT)
-    with open('Categories.csv','r', newline='') as inFile:
-        reader = csv.reader(inFile)
-        categories = {rows[0]: rows[1] for rows in reader}
-    return categories
+from datetime import datetime
 
-#Check to see if the current item is in the dictionary
-def checkCategory():
-    with open(directory, 'r', newline='') as inFile:
-        reader = csv.reader(inFile)
-        categories =  {rows[0]:rows[1] for rows in reader}
-        return categories
-
-#Adds lines to the categories csv if there is something in the transactions.csv but not in the categories.csv
-def addToCategoryCSV(newCategoryDict):
-    establishedCategories = getCategoryInformation()
-
-    with open('Categories.csv', 'a', newline='') as inFile:
-        writer = csv.writer(inFile)
-
-        for row in newCategoryDict.items():
-            if row[0] not in establishedCategories.keys():
-                writer.writerow(row)
-            else:
-                print(row[0] + " has been given a category of " + row[1])
-
-def addToIncomeAndExpenseCSV(dictOfNewItems):
-    os.chdir(ROOT)
-    with open('Income and Expenses.csv', 'a', newline='') as inFile:
-        writer = csv.writer(inFile)
-
-        for description, listOfValues in dictOfNewItems.items():
-            writer.writerow([description, listOfValues[0], listOfValues[1], listOfValues[2], listOfValues[3]])
-
-
+def try_parsing_date(text):
+    for fmt in ('%Y-%m-%d','%m/%d/%Y'):
+        try:
+            return datetime.strptime(text, fmt)
+        except ValueError:
+            pass
+    raise ValueError('no valid date format found')
 
 
 if __name__ == '__main__':
     from SetupBankStatementCondenser import SetupTool
+
     accountSetup = SetupTool()
+
+    dataframes = []
 
     os.chdir("Statements")
 
     for directory in os.listdir(os.getcwd()):
+        os.chdir(ROOT)
+        os.chdir("Statements")
         if directory == "transactions.csv":
-            print(directory + " is the Ally Bank statement.")
-            allAllyTransactions = getAllyInformation()
-            addToIncomeAndExpenseCSV(allAllyTransactions)
-
+            ally_Statement_Database = getAllyInformation()
+            dataframes.append(ally_Statement_Database)
 
         elif "Chase" in directory:
             print(directory + " is the Chase credit card statement.")
             allChaseTransactions = getChaseInformation(directory)
-            addToIncomeAndExpenseCSV(allChaseTransactions)
+            print(allChaseTransactions)
+            dataframes.append(allChaseTransactions)
 
         elif "_transaction_download" in directory:
             print(directory + " is the Capital One credit card statement.")
             allCapitalOneTransactions = getCapitalOneInformation(directory)
-            addToIncomeAndExpenseCSV(allCapitalOneTransactions)
+            dataframes.append(allCapitalOneTransactions)
 
 
-        else:
-            print(directory + " is not a reconized statement in the Statements directory..")
+        elif "Export" in directory:
+            print(directory + " is the DCU statement.")
+            allDCUTransactions = getDCUInformation(directory)
+            dataframes.append(allDCUTransactions)
+
+        elif "Transaction History_" in directory:
+            print(directory + " is the TD Bank credit card statement.")
+            allTDTransactions = getTDBankInformation(directory)
+            dataframes.append(allTDTransactions)
+
+
+    import numpy as np
+
+    final_Dataframe = pd.DataFrame(np.concatenate(dataframes), columns=dataframes[0].columns)
+
+    fixed_Dates = []
 
 
 
+    final_Dataframe = final_Dataframe.sort_values(by='Date')
 
-    #checkCategory(getCategoryInformation(), getChaseInformation())
+    for date in final_Dataframe["Date"]:
+        fixed_Dates.append(try_parsing_date(date))
+    final_Dataframe["Date"] = fixed_Dates
 
-    writeToCSV()
 
-
+    final_Dataframe.to_csv("../Output_File.csv")
 
 
 
