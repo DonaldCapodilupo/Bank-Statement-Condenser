@@ -11,7 +11,7 @@ class Account_Item:
     def get_Category(self):
         def getCategoryInformation():
             import csv
-            with open('Categories.csv', 'r', newline='') as inFile:
+            with open('Categories Pass.csv', 'r', newline='') as inFile:
                 reader = csv.reader(inFile)
                 categories = {rows[0]: rows[1] for rows in reader}
             return categories
@@ -26,7 +26,7 @@ class Account_Item:
         print("Please provide a new category.")
         new_Category = input(">")
 
-        with open('Categories.csv', 'a') as document:
+        with open('Categories Pass.csv', 'a') as document:
             document.write(self.description + "," + new_Category + '\n')
 
         return new_Category

@@ -1,7 +1,7 @@
 import csv
 from BankInformationRetrievalFunctions import *
 
-ROOT = path.dirname(path.realpath(__file__))
+#ROOT = path.dirname(path.realpath(__file__))
 
 
 #Date, Amount, Type, Description, Category
@@ -19,59 +19,25 @@ def try_parsing_date(text):
 
 if __name__ == '__main__':
     from SetupBankStatementCondenser import SetupTool
+    from Backend import *
 
     accountSetup = SetupTool()
 
-    dataframes = []
+    list_Of_Statements_As_Dataframes = []
 
-    os.chdir("Statements")
-
-    for directory in os.listdir(os.getcwd()):
-        os.chdir(ROOT)
-        os.chdir("Statements")
-        if directory == "transactions.csv":
-            ally_Statement_Database = getAllyInformation()
-            dataframes.append(ally_Statement_Database)
-
-        elif "Chase" in directory:
-            print(directory + " is the Chase credit card statement.")
-            allChaseTransactions = getChaseInformation(directory)
-            print(allChaseTransactions)
-            dataframes.append(allChaseTransactions)
-
-        elif "_transaction_download" in directory:
-            print(directory + " is the Capital One credit card statement.")
-            allCapitalOneTransactions = getCapitalOneInformation(directory)
-            dataframes.append(allCapitalOneTransactions)
+    for statement in os.listdir("Statements"):
+        if "Ally" in statement:
+            list_Of_Statements_As_Dataframes.append(ally_Statement_To_Dataframe(statement))
+        if "Chase" in statement:
+            list_Of_Statements_As_Dataframes.append(chase_Statement_To_Dataframe(statement))
+        if "DCU" in statement:
+            list_Of_Statements_As_Dataframes.append(dcu_Statement_To_Dataframe(statement))
+    output_Dataframe = pd.concat(list_Of_Statements_As_Dataframes, ignore_index=True)
+    output_Dataframe["Amount"] = output_Dataframe["Amount"].abs()
+    output_Dataframe.to_csv("Output.csv")
+    print(output_Dataframe)
 
 
-        elif "Export" in directory:
-            print(directory + " is the DCU statement.")
-            allDCUTransactions = getDCUInformation(directory)
-            dataframes.append(allDCUTransactions)
-
-        elif "Transaction History_" in directory:
-            print(directory + " is the TD Bank credit card statement.")
-            allTDTransactions = getTDBankInformation(directory)
-            dataframes.append(allTDTransactions)
-
-
-    import numpy as np
-
-    final_Dataframe = pd.DataFrame(np.concatenate(dataframes), columns=dataframes[0].columns)
-
-    fixed_Dates = []
-
-
-
-    final_Dataframe = final_Dataframe.sort_values(by='Date')
-
-    for date in final_Dataframe["Date"]:
-        fixed_Dates.append(try_parsing_date(date))
-    final_Dataframe["Date"] = fixed_Dates
-
-
-    final_Dataframe.to_csv("../Output_File.csv")
 
 
 

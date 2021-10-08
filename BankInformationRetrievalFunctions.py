@@ -4,15 +4,39 @@ from os import path
 import csv
 ROOT = path.dirname(path.realpath(__file__))
 
+
+#approved_Categories = {
+#    []:"Automotive",
+#    []:"Bills & Utilities",
+#    []:"Education",
+#    []:"Entertainment",
+#    []:"Fee's and Adjustments",
+#    []:"Food and Drink",
+#    []:"Gas",
+#    []:"Gifts and Donations",
+#    []:"Groceries",
+#    []:"Health and Wellness",
+#    []:"Home",
+#    []:"Miscellaneous",
+#    []:"Personal",
+#    []:"Professional Services",
+#    []:"Shopping",
+#    []:"Travel",
+#    []:"Marijuana",
+#    ["VANGUARD SELL INVESTMENT","Request Transfer to "]:"Transfer to Asset",
+#    ["CHASE CREDIT CRD EPAY"]:"Pay down Liability",
+#
+#}
+
 def getCategoryInformation():
-            import csv
-            with open(ROOT+'/Categories.csv', 'r', newline='') as inFile:
-                reader = csv.reader(inFile)
-                categories = {rows[0]: rows[1] for rows in reader}
-            return categories
+    import csv
+    with open(ROOT+'/Categories Pass.csv', 'r', newline='') as inFile:
+        reader = csv.reader(inFile)
+        categories = {rows[0]: rows[1] for rows in reader}
+    return categories
 
 def addCategoryToCSV(description, category):
-    with open('../Categories.csv', 'a') as document:
+    with open('../Categories Pass.csv', 'a') as document:
         document.write(description.replace(",", "") + "," + str(category) + '\n')
 
 def getAllyInformation():
@@ -21,19 +45,22 @@ def getAllyInformation():
 
     categories_To_Add = []
 
-    known_Categories = getCategoryInformation()
+
 
     for description in ally_Statement[" Description"]:
+        known_Categories = getCategoryInformation()
         if "FEDEX" in description and "DDIR" in description:
             categories_To_Add.append("Fedex Income")
 
+
         elif description.replace(",","") in known_Categories.keys():
             categories_To_Add.append(known_Categories[description.replace(",","")])
+
         else:
             print(description + " Does not have a known category")
             print("What is the category?")
             user_Input = input(">")
-            with open('../Categories.csv', 'a') as document:
+            with open('../Categories Pass.csv', 'a') as document:
                 document.write(description.replace(",","") + "," + user_Input + '\n')
             categories_To_Add.append(user_Input)
 
@@ -58,11 +85,13 @@ def getChaseInformation(directory):
         }
     )
 
-    known_Categories = getCategoryInformation()
+
 
     for description, category in zip(chase_Statement["Description"], chase_Statement["Category"]):
+        known_Categories = getCategoryInformation()
         if description.replace(",", "") not in known_Categories.keys():
             addCategoryToCSV(description.replace(",", ""),category)
+
 
     modified_Chase_Statement["Category"] = modified_Chase_Statement["Category"].fillna("Pay Down Liability")
     return modified_Chase_Statement
@@ -81,11 +110,13 @@ def getCapitalOneInformation(directory):
         }
     )
 
-    known_Categories = getCategoryInformation()
+
 
     for description, category in zip(capital_One_Statement["Description"], capital_One_Statement["Category"]):
+        known_Categories = getCategoryInformation()
         if description.replace(",", "") not in known_Categories.keys():
             addCategoryToCSV(description.replace(",", ""), category)
+
 
     return modified_Capital_One_Statement
 
@@ -102,21 +133,25 @@ def getDCUInformation(directory):
     )
 
     categories_To_Add = []
-    known_Categories = getCategoryInformation()
+
 
     #dcu_Statement["Categories"] = categories_To_Add
 
     for description in dcu_Statement["Memo"]:
+        known_Categories = getCategoryInformation()
         if str(description).replace(",", "") not in known_Categories.keys():
             print(str(description) + " Does not have a known category")
             print("What is the category?")
             user_Input = input(">")
             addCategoryToCSV(str(description).replace(",", ""), user_Input)
             categories_To_Add.append(user_Input)
+
         elif str(description).replace(",", "") == 'nan':
             categories_To_Add.append("Yo what the fuck.")
+
         else:
             categories_To_Add.append(known_Categories[description])
+
     modified_DCU_Statement["Categories"] = categories_To_Add
     return modified_DCU_Statement
 
