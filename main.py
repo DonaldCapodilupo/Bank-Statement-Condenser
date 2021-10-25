@@ -32,10 +32,14 @@ if __name__ == '__main__':
             list_Of_Statements_As_Dataframes.append(chase_Statement_To_Dataframe(statement))
         if "DCU" in statement:
             list_Of_Statements_As_Dataframes.append(dcu_Statement_To_Dataframe(statement))
+        if "Capital One" in statement:
+            list_Of_Statements_As_Dataframes.append(capital_One_Statement_To_Dataframe(statement))
+        if "Vanguard" in statement:
+            list_Of_Statements_As_Dataframes.append(vanguard_Investment_Statement_To_Dataframe(statement))
     output_Dataframe = pd.concat(list_Of_Statements_As_Dataframes, ignore_index=True)
     output_Dataframe["Amount"] = output_Dataframe["Amount"].abs()
     output_Dataframe.to_csv("Output.csv")
-    print(output_Dataframe)
+    #print(output_Dataframe)
 
 
 

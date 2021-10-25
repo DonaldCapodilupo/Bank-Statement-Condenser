@@ -123,21 +123,47 @@ def dcu_Statement_To_Dataframe(statement_Name):
 
     for row in statement.values:
         type_Row = row[1]  # If Div - Category = interest income
-        description = row[2]
         if type_Row == "DIVIDEND":
             list_Of_Categories.append("Interest Income")
-            continue
-        elif description in dcu_Pattern_Categories.keys():
-            for pattern in dcu_Pattern_Categories.keys():
-                if re.search(pattern, description):
-                    print(
-                        description + " is close enough to a income and has been given a category of: " +
-                        dcu_Pattern_Categories[pattern])
-                    list_Of_Categories.append(dcu_Pattern_Categories[pattern])
-                    continue
         else:
-            list_Of_Categories.append(get_Categories(description))
+            list_Of_Categories.append("Transfer to/from Asset")
 
-    new_statement = statement[["Date", "Amount", "Type", "Description", ]]  # Category
+    statement["Category"] = list_Of_Categories
+    new_statement = statement[["Date", "Amount", "Type", "Description", "Category"]]  # Category
 
-    print(new_statement)
+    return new_statement
+
+
+def capital_One_Statement_To_Dataframe(statement_Name):
+    statement = pd.read_csv("Statements/" + statement_Name)
+
+    statement["Amount"] = statement["Debit"].fillna(statement["Credit"])
+
+    list_Of_Categories = []
+
+    new_Statement = statement.drop(["Posted Date", "Card No.", "Debit", "Credit", "Category"], axis=1)
+
+    for row in new_Statement.values:
+        description = row[1]
+        if "CAPITAL ONE ONLINE PYMT" in description:
+            list_Of_Categories.append("Transfer to/form Asset")
+        else:
+            list_Of_Categories.append("Business Expense")
+    new_Statement["Category"] = list_Of_Categories
+
+    return  new_Statement
+
+
+def vanguard_Investment_Statement_To_Dataframe(statement_Name):
+    statement = pd.read_csv("Statements/" + statement_Name, skiprows=8, index_col=False)
+
+    #print(statement)
+
+    statement["Description"] = statement["Investment Name"] + " "  +statement["Transaction Description"]
+
+    statement = statement.drop(["Account Number", "Trade Date", "Investment Name", "Shares", "Share Price",
+                                    "Commission Fees", "Net Amount", "Accrued Interest", "Account Type",
+                                    "Transaction Description","Symbol", "Investment Name",], axis=1)
+
+    new_Statement = statement[["Settlement Date", "Principal Amount", "Transaction Type", "Description"]]
+    print(statement)
