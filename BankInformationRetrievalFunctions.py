@@ -5,28 +5,7 @@ import csv
 ROOT = path.dirname(path.realpath(__file__))
 
 
-#approved_Categories = {
-#    []:"Automotive",
-#    []:"Bills & Utilities",
-#    []:"Education",
-#    []:"Entertainment",
-#    []:"Fee's and Adjustments",
-#    []:"Food and Drink",
-#    []:"Gas",
-#    []:"Gifts and Donations",
-#    []:"Groceries",
-#    []:"Health and Wellness",
-#    []:"Home",
-#    []:"Miscellaneous",
-#    []:"Personal",
-#    []:"Professional Services",
-#    []:"Shopping",
-#    []:"Travel",
-#    []:"Marijuana",
-#    ["VANGUARD SELL INVESTMENT","Request Transfer to "]:"Transfer to Asset",
-#    ["CHASE CREDIT CRD EPAY"]:"Pay down Liability",
-#
-#}
+
 
 def getCategoryInformation():
     import csv

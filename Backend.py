@@ -4,29 +4,7 @@ import csv, re
 pd.set_option("display.max_rows", None, "display.max_columns", None)
 
 pattern_Categories = {
-    "MARK ONE": "Mark One Income",
-    "FEDEX": "Fedex Income",
-    "eCheck Deposit": "Misc Income",
-    "EXPRESS SERVICES": "Mark One Income",
-    "TAX REF": "Misc Income",
-    "MASTTAXRFD": "Misc Income",
-    "TD BANK PAYMENT": "Pay Down Liability",
-    "Mturk": "Mturk Income",
-    "INDUSTRIAL STREET": "Marijuana",
-    "Interest Pa": "Interest Income",
-    "66 INDUSTRIAL AVE": "Marijuana",
-    "PATCARE": "Marijuana",
-    "ATM Fee Reimbursement": "Reduce Expense",
-    "COINBASE": "Transfer to Asset",
-    "INDUSTRIAL AVE": "Marijuana",
-    "CAPITAL ONE": "Pay Down Liability",
-    "CHASE CREDIT CRD EPAY": "Pay Down Liability",
-    "PAYMENT FOR AMZ STORECARD": "Pay Down Liability",
-    "transfer to": "Transfer to/from Account",
-    "transfer from": "Transfer to/from Account",
-    "VANGUARD SELL INVESTMENT": "Transfer to/from Account",
-    "VANGUARD BUY INVESTMENT": "Transfer to/from Account",
-    "ALLY BANK $TRANSFER": "Transfer to/from Account",
+
 
 
 }
@@ -78,14 +56,14 @@ def ally_Statement_To_Dataframe(statement_Name):
     statement = pd.read_csv("Statements/" + statement_Name)
     statement = statement.drop(columns=[" Time"])
 
-    list_Of_Categories = []
+    #list_Of_Categories = []
+#
+    ## Categorize Transactions
+    #for row in statement.values:
+    #    description = row[3]
+    #    list_Of_Categories.append(get_Categories(description))
 
-    # Categorize Transactions
-    for row in statement.values:
-        description = row[3]
-        list_Of_Categories.append(get_Categories(description))
-
-    statement["Category"] = list_Of_Categories
+    #statement["Category"] = list_Of_Categories
     statement = statement.rename(columns={" Amount": "Amount",
                                           " Type": "Type",
                                           " Description": "Description"})
@@ -109,15 +87,17 @@ def chase_Statement_To_Dataframe(statement_Name):
 
 
 def dcu_Statement_To_Dataframe(statement_Name):
-    statement = pd.read_csv("Statements/" + statement_Name, skiprows=3)
+    statement = pd.read_csv("Statements/" + statement_Name)
 
-
-    statement["Amount"] = statement["Amount Debit"].fillna(statement["Amount Credit"])
 
     statement = statement.drop(
-        ["Transaction Number", "Balance", "Amount Debit", "Amount Credit", "Check Number", "Fees  "], axis=1)
+        ["ID", "MEMO","CURRENT BALANCE"], axis=1)
 
-    statement = statement.rename(columns={"Description": "Type", "Memo": "Description"})
+    print(statement)
+
+    statement = statement.rename(columns={"DATE": "Date","AMOUNT":"Amount","TRANSACTION TYPE":"Type",
+                                          "DESCRIPTION": "Description",
+                                          })
 
     list_Of_Categories = []
 
@@ -129,6 +109,9 @@ def dcu_Statement_To_Dataframe(statement_Name):
             list_Of_Categories.append("Transfer to/from Asset")
 
     statement["Category"] = list_Of_Categories
+
+
+
     new_statement = statement[["Date", "Amount", "Type", "Description", "Category"]]  # Category
 
     return new_statement
